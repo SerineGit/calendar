@@ -33,7 +33,7 @@ let saving = false;
 let lastSnapshot = '';
 
 const today = new Date();
-const st = {y:today.getFullYear(), m:today.getMonth(), py:today.getFullYear(), ed:null};
+const st = {y:2019, m:9, py:2019, ed:null}; // открывается на октябре 2019 (месяцы считаются с 0, поэтому 9 = октябрь)
 let selC = COLORS[0];
 let activeKey = null;
 
@@ -402,7 +402,7 @@ function wireEvents(){
 
   $("btnPrev").addEventListener("click", ()=>{ st.m--; if(st.m<0){st.m=11; st.y--;} render(); });
   $("btnNext").addEventListener("click", ()=>{ st.m++; if(st.m>11){st.m=0; st.y++;} render(); });
-  $("btnToday").addEventListener("click", ()=>{ st.y=today.getFullYear(); st.m=today.getMonth(); render(); });
+  $("btnToday").addEventListener("click", ()=>{ st.y=2019; st.m=9; render(); }); // возвращает на октябрь 2019, а не на реальную дату устройства
   $("calTitle").addEventListener("click", openPick);
   $("pickYearDown").addEventListener("click", ()=>{ st.py--; $("pickYearVal").textContent=st.py; renderPickM(); });
   $("pickYearUp").addEventListener("click", ()=>{ st.py++; $("pickYearVal").textContent=st.py; renderPickM(); });
