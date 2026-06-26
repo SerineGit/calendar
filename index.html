@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Календарь</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;900&family=Cinzel+Decorative:wght@400;700&family=IM+Fell+English:ital@0;1&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body style="margin:0;background:#0a0508">
+
+<div class="cal-app">
+  <div class="cal-shell">
+
+    <div class="cal-deco-bar">
+      <span>&#x2726;</span> Lux Night Club &nbsp;&middot;&nbsp; Los Angeles &nbsp;&middot;&nbsp; Est. MMXV <span>&#x2726;</span>
+    </div>
+
+    <div class="cal-bar">
+      <button class="cal-title" id="calTitle" aria-label="Выбрать месяц и год">
+        <span class="cal-sym">&#x2726;</span>
+        <span class="cal-month" id="calMonth">&mdash;</span>
+        <span class="cal-year" id="calYear">&mdash;</span>
+        <span class="cal-caret">&#x25BE;</span>
+      </button>
+      <div class="cal-nav">
+        <button class="cal-btn" id="btnToday" title="Сегодня">&#x2726;</button>
+        <button class="cal-btn icon" id="btnPrev" aria-label="Предыдущий месяц">&#x2039;</button>
+        <button class="cal-btn icon" id="btnNext" aria-label="Следующий месяц">&#x203A;</button>
+      </div>
+    </div>
+
+    <div class="cal-weekdays" id="calWeekdays"></div>
+    <div class="cal-grid" id="calGrid"></div>
+
+    <div class="cal-footer">
+      <span>&middot;</span> What can I do for you? <span>&middot;</span>
+    </div>
+
+  </div>
+</div>
+
+<div class="cal-pop" id="calPop"></div>
+
+<div class="cal-overlay" id="dayOverlay">
+  <div class="cal-modal">
+    <div class="cal-modal-head">
+      <span class="cal-modal-title" id="dayTitle"></span>
+      <button class="cal-x" data-close>&times;</button>
+    </div>
+    <div class="cal-modal-body">
+      <div class="ev-list" id="evList"></div>
+
+      <!-- форма добавления/редактирования события — видна только админу (admin-mode) -->
+      <div class="admin-only">
+        <div class="cal-form-divider"><span id="formMode">Новое событие</span></div>
+        <div class="fld"><label for="fTitle">Название</label><input id="fTitle" type="text" placeholder="Например: Ночь в Lux…" maxlength="120"></div>
+        <div class="fld"><label for="fDesc">Описание</label><textarea id="fDesc" placeholder="Детали события…"></textarea></div>
+        <div class="fld"><label for="fLink">Ссылка</label><input id="fLink" type="url" placeholder="https://…"></div>
+        <div class="fld"><label for="fImg">Картинка (URL)</label><input id="fImg" type="url" placeholder="https://…/image.jpg"></div>
+        <div class="fld"><label>Цвет</label><div class="swatches" id="swatches"></div></div>
+        <div class="form-actions">
+          <button class="cal-primary" id="btnSaveEv">Добавить событие</button>
+          <button class="cal-secondary" id="btnCancelEdit" style="display:none">Отмена</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="cal-overlay" id="pickOverlay">
+  <div class="cal-modal" style="max-width:340px">
+    <div class="cal-modal-head"><span class="cal-modal-title">Перейти к</span><button class="cal-x" data-close>&times;</button></div>
+    <div class="cal-modal-body">
+      <div class="pick-year">
+        <button class="cal-btn icon" id="pickYearDown">&#x2039;</button>
+        <span class="pick-year-val" id="pickYearVal"></span>
+        <button class="cal-btn icon" id="pickYearUp">&#x203A;</button>
+      </div>
+      <div class="pick-months" id="pickMonths"></div>
+    </div>
+  </div>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
