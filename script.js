@@ -7,6 +7,7 @@
 const GIST_ID   = '4c966ef04fdf1c58809e0169f458f82e';
 const GIST_FILE = 'calendar_db.json';
 const GIST_URL  = 'https://api.github.com/gists/' + GIST_ID;
+const LS_BACKUP = 'cal_db_backup'; // локальная резервная копия событий
 
 function getToken(){ return localStorage.getItem('cal_gist_token') || ''; }
 function setToken(t){ localStorage.setItem('cal_gist_token', t); console.log('Токен сохранён. Обновите страницу.'); }
@@ -31,6 +32,7 @@ let store = {};
 let adminMode = false;
 let saving = false;
 let lastSnapshot = '';
+let gistLoadOk = false; // успешно ли прочитан гист в этой загрузке
 
 const today = new Date();
 const st = {y:2019, m:9, py:2019, ed:null}; // открывается на октябре 2019 (месяцы считаются с 0, поэтому 9 = октябрь)
@@ -71,9 +73,24 @@ function showSaveStatus(state){
 }
 
 // ─────────────────────────────────────────
+// LOCAL BACKUP
+// ─────────────────────────────────────────
+function saveLocalBackup(body){
+  try{ localStorage.setItem(LS_BACKUP, body); }catch(e){}
+}
+function loadLocalBackup(){
+  try{
+    const raw = localStorage.getItem(LS_BACKUP);
+    if(raw) return JSON.parse(raw);
+  }catch(e){}
+  return null;
+}
+
+// ─────────────────────────────────────────
 // GIST LOAD / SAVE
 // ─────────────────────────────────────────
 async function loadFromGist(){
+  gistLoadOk = false;
   try{
     const headers = { 'Accept':'application/vnd.github.v3+json' };
     const token = getToken();
@@ -81,13 +98,15 @@ async function loadFromGist(){
     const r = await fetch(GIST_URL, { headers });
     if(!r.ok) throw new Error('HTTP '+r.status);
     const j = await r.json();
+    gistLoadOk = true; // гист реально прочитан (даже если файл пуст)
     const content = j.files && j.files[GIST_FILE] && j.files[GIST_FILE].content;
     if(!content) return false;
     const parsed = JSON.parse(content);
-    const snap = JSON.stringify(parsed);
+    const snap = JSON.stringify(parsed, null, 2); // сравниваем в том же формате, что и при сохранении
     if(snap === lastSnapshot) return false;
     lastSnapshot = snap;
     store = parsed;
+    saveLocalBackup(snap); // держим локальную копию в актуальном виде
     return true;
   }catch(e){
     console.warn('Gist load error:', e);
@@ -101,6 +120,7 @@ async function saveToGist(){
   showSaveStatus('saving');
   const body = JSON.stringify(store, null, 2);
   lastSnapshot = body;
+  saveLocalBackup(body); // сначала локально — данные не потеряются даже при сбое сети
   try{
     const token = getToken();
     if(!token) throw new Error('no token');
@@ -428,12 +448,24 @@ async function init(){
   createAdminBadge();
 
   const loaded = await loadFromGist();
-  if(!loaded || Object.keys(store).length===0){
-    if(Object.keys(store).length===0){
-      store = JSON.parse(JSON.stringify(DEFAULT_EVENTS));
-      if(getToken()) await saveToGist();
+
+  // если из гиста ничего не пришло — пробуем локальную копию,
+  // чтобы данные пережили обновление даже при проблемах с сетью/токеном
+  if(!loaded && Object.keys(store).length===0){
+    const backup = loadLocalBackup();
+    if(backup && Object.keys(backup).length){
+      store = backup;
+      lastSnapshot = JSON.stringify(backup, null, 2);
     }
   }
+
+  // события по умолчанию записываем в гист ТОЛЬКО если он реально прочитан и оказался пустым.
+  // при ошибке загрузки (gistLoadOk === false) гист НЕ трогаем, чтобы не затереть данные.
+  if(Object.keys(store).length===0){
+    store = JSON.parse(JSON.stringify(DEFAULT_EVENTS));
+    if(gistLoadOk && getToken()) await saveToGist();
+  }
+
   render();
   poll();
 }
